@@ -1,0 +1,1113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1E293B" />
+    <meta
+      name="description"
+      content="Smart Home Companion - Household management and energy monitoring platform"
+    />
+    <title>Smart Home Companion</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <!-- App styles -->
+    <link rel="stylesheet" href="styles.css" />
+
+    <script>
+      window.addEventListener(
+        "error",
+        function (e) {
+          if (
+            e.error instanceof DOMException &&
+            e.error.name === "DataCloneError" &&
+            e.message &&
+            e.message.includes("PerformanceServerTiming")
+          ) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+          }
+        },
+        true,
+      );
+    </script>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root" style="display: none"></div>
+
+    <!-- ============= APP SHELL ============= -->
+    <div class="app-shell" id="app-shell">
+      <!-- Mobile top bar -->
+      <header class="mobile-topbar" data-testid="mobile-topbar">
+        <button
+          class="icon-btn"
+          id="mobile-menu-btn"
+          data-testid="mobile-menu-btn"
+          aria-label="Open menu"
+        >
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="brand-mini">
+          <span class="brand-mark"
+            ><i class="fa-solid fa-house-signal"></i
+          ></span>
+          <span class="brand-text">Smart Home Companion</span>
+        </div>
+        <button
+          class="icon-btn"
+          id="theme-toggle-mobile"
+          data-testid="theme-toggle-mobile"
+          aria-label="Toggle theme"
+        >
+          <i class="fa-solid fa-moon"></i>
+        </button>
+      </header>
+
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar" data-testid="sidebar">
+        <div class="sidebar-header">
+          <div class="brand">
+            <span class="brand-mark"
+              ><i class="fa-solid fa-house-signal"></i
+            ></span>
+            <div>
+              <div class="brand-title">Smart Home</div>
+              <div class="brand-subtitle">Companion</div>
+            </div>
+          </div>
+          <button
+            class="icon-btn sidebar-close"
+            id="sidebar-close"
+            data-testid="sidebar-close"
+            aria-label="Close menu"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <nav class="nav" role="tablist">
+          <button
+            class="nav-item active"
+            data-tab="dashboard"
+            data-testid="nav-dashboard"
+          >
+            <i class="fa-solid fa-chart-line"></i><span>Dashboard</span>
+          </button>
+          <button class="nav-item" data-tab="energy" data-testid="nav-energy">
+            <i class="fa-solid fa-bolt"></i><span>Energy Monitor</span>
+          </button>
+          <button
+            class="nav-item"
+            data-tab="maintenance"
+            data-testid="nav-maintenance"
+          >
+            <i class="fa-solid fa-screwdriver-wrench"></i
+            ><span>Maintenance</span>
+          </button>
+          <button class="nav-item" data-tab="bills" data-testid="nav-bills">
+            <i class="fa-solid fa-receipt"></i><span>Utility Bills</span>
+          </button>
+          <button
+            class="nav-item"
+            data-tab="inventory"
+            data-testid="nav-inventory"
+          >
+            <i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span>
+          </button>
+          <button class="nav-item" data-tab="reports" data-testid="nav-reports">
+            <i class="fa-solid fa-chart-pie"></i
+            ><span>Reports & Analytics</span>
+          </button>
+          <button
+            class="nav-item"
+            data-tab="settings"
+            data-testid="nav-settings"
+          >
+            <i class="fa-solid fa-gear"></i><span>Settings</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <button
+            class="theme-toggle"
+            id="theme-toggle-desktop"
+            data-testid="theme-toggle-desktop"
+          >
+            <span class="tt-track"><span class="tt-thumb"></span></span>
+            <span class="tt-label"
+              ><i class="fa-solid fa-moon"></i> Dark mode</span
+            >
+          </button>
+          <div class="sidebar-tip">
+            <i class="fa-solid fa-lightbulb"></i>
+            <span>Tip: adjust your kWh tariff in <b>Settings</b>.</span>
+          </div>
+        </div>
+      </aside>
+      <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+      <!-- Main -->
+      <main class="main" id="main-content">
+        <!-- ============ DASHBOARD ============ -->
+        <section
+          class="tab-panel active"
+          id="tab-dashboard"
+          data-testid="tab-dashboard"
+        >
+          <div class="page-head">
+            <div>
+              <p class="eyebrow">Overview</p>
+              <h1 class="page-title">
+                Good day at home <span class="wave">👋</span>
+              </h1>
+              <p class="page-sub">
+                A quick snapshot of your household — energy, bills, upkeep and
+                assets.
+              </p>
+            </div>
+            <div class="page-actions">
+              <button
+                class="btn btn-ghost"
+                id="quick-demo-btn"
+                data-testid="quick-demo-btn"
+              >
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Reload demo
+              </button>
+            </div>
+          </div>
+
+          <div class="metric-grid">
+            <div
+              class="metric-card accent-emerald"
+              data-testid="metric-electricity"
+            >
+              <div class="metric-icon"><i class="fa-solid fa-bolt"></i></div>
+              <div>
+                <div class="metric-label">Monthly electricity</div>
+                <div class="metric-value" id="metric-electricity-value">
+                  ₹0.00
+                </div>
+                <div class="metric-foot" id="metric-electricity-foot">
+                  — kWh estimated
+                </div>
+              </div>
+            </div>
+            <div class="metric-card accent-amber" data-testid="metric-bills">
+              <div class="metric-icon">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+              </div>
+              <div>
+                <div class="metric-label">Pending bills</div>
+                <div class="metric-value" id="metric-bills-value">0</div>
+                <div class="metric-foot" id="metric-bills-foot">
+                  ₹0.00 unpaid
+                </div>
+              </div>
+            </div>
+            <div
+              class="metric-card accent-blue"
+              data-testid="metric-maintenance"
+            >
+              <div class="metric-icon">
+                <i class="fa-solid fa-screwdriver-wrench"></i>
+              </div>
+              <div>
+                <div class="metric-label">Upcoming maintenance</div>
+                <div class="metric-value" id="metric-maintenance-value">0</div>
+                <div class="metric-foot" id="metric-maintenance-foot">
+                  0 overdue
+                </div>
+              </div>
+            </div>
+            <div
+              class="metric-card accent-violet"
+              data-testid="metric-inventory"
+            >
+              <div class="metric-icon">
+                <i class="fa-solid fa-boxes-stacked"></i>
+              </div>
+              <div>
+                <div class="metric-label">Active inventory</div>
+                <div class="metric-value" id="metric-inventory-value">0</div>
+                <div class="metric-foot" id="metric-inventory-foot">
+                  0 under warranty
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">Consumption preview</div>
+                  <div class="card-sub">Last 7 days · estimated kWh</div>
+                </div>
+                <span class="chip"
+                  ><i class="fa-solid fa-arrow-trend-up"></i> live</span
+                >
+              </div>
+              <div class="chart-wrap" style="height: 230px">
+                <canvas id="dashboard-consumption-chart"></canvas>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">Alerts & reminders</div>
+                  <div class="card-sub">What needs your attention</div>
+                </div>
+              </div>
+              <div
+                class="alerts-list"
+                id="dashboard-alerts"
+                data-testid="dashboard-alerts"
+              ></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ ENERGY ============ -->
+        <section class="tab-panel" id="tab-energy" data-testid="tab-energy">
+          <div class="page-head">
+            <div>
+              <p class="eyebrow">Energy monitor</p>
+              <h1 class="page-title">Track every watt</h1>
+              <p class="page-sub">
+                Add appliances and see daily, monthly and cost estimates
+                instantly.
+              </p>
+            </div>
+            <div class="page-actions">
+              <span class="chip chip-emerald"
+                ><i class="fa-solid fa-coins"></i> Tariff
+                <b id="energy-tariff-label">₹0.15</b> / kWh</span
+              >
+            </div>
+          </div>
+
+          <div class="grid-form">
+            <div class="card">
+              <div class="card-head">
+                <div class="card-title" id="appliance-form-title">
+                  Add appliance
+                </div>
+              </div>
+              <form
+                id="appliance-form"
+                class="form"
+                data-testid="appliance-form"
+              >
+                <input type="hidden" id="appliance-id" />
+                <div class="field">
+                  <label>Appliance name</label>
+                  <input
+                    required
+                    id="appliance-name"
+                    data-testid="appliance-name-input"
+                    placeholder="e.g. Living Room AC"
+                  />
+                </div>
+                <div class="row-2">
+                  <div class="field">
+                    <label>Power rating (Watts)</label>
+                    <input
+                      required
+                      type="number"
+                      min="1"
+                      step="1"
+                      id="appliance-watts"
+                      data-testid="appliance-watts-input"
+                      placeholder="1500"
+                    />
+                  </div>
+                  <div class="field">
+                    <label>Hours / day</label>
+                    <input
+                      required
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      id="appliance-hours"
+                      data-testid="appliance-hours-input"
+                      placeholder="6"
+                    />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Category</label>
+                  <select
+                    id="appliance-category"
+                    data-testid="appliance-category-input"
+                  >
+                    <option>HVAC</option>
+                    <option>Kitchen</option>
+                    <option>Entertainment</option>
+                    <option>Lighting</option>
+                    <option>Laundry</option>
+                    <option>Office</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+                <div class="form-actions">
+                  <button
+                    type="submit"
+                    class="btn btn-primary"
+                    data-testid="appliance-submit"
+                  >
+                    <i class="fa-solid fa-plus"></i>
+                    <span id="appliance-submit-label">Add appliance</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-ghost"
+                    id="appliance-cancel"
+                    style="display: none"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">Category distribution</div>
+                  <div class="card-sub">Where your energy goes</div>
+                </div>
+              </div>
+              <div class="chart-wrap" style="height: 230px">
+                <canvas id="energy-doughnut-chart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Appliance-wise usage</div>
+                <div class="card-sub">Monthly kWh per appliance</div>
+              </div>
+            </div>
+            <div class="chart-wrap" style="height: 260px">
+              <canvas id="energy-bar-chart"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">All appliances</div>
+                <div class="card-sub">
+                  <span id="appliance-count">0</span> registered
+                </div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="table" data-testid="appliance-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Watts</th>
+                    <th>Hrs/day</th>
+                    <th>Daily kWh</th>
+                    <th>Monthly kWh</th>
+                    <th>Cost</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="appliance-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ MAINTENANCE ============ -->
+        <section
+          class="tab-panel"
+          id="tab-maintenance"
+          data-testid="tab-maintenance"
+        >
+          <div class="page-head">
+            <div>
+              <p class="eyebrow">Maintenance scheduler</p>
+              <h1 class="page-title">Never miss a service</h1>
+              <p class="page-sub">
+                Track service intervals with countdown badges and quick actions.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid-form">
+            <div class="card">
+              <div class="card-head">
+                <div class="card-title" id="maint-form-title">
+                  Add service schedule
+                </div>
+              </div>
+              <form id="maint-form" class="form" data-testid="maintenance-form">
+                <input type="hidden" id="maint-id" />
+                <div class="field">
+                  <label>Appliance name</label>
+                  <input
+                    required
+                    id="maint-name"
+                    data-testid="maint-name-input"
+                    placeholder="e.g. Refrigerator"
+                  />
+                </div>
+                <div class="row-2">
+                  <div class="field">
+                    <label>Last serviced</label>
+                    <input
+                      required
+                      type="date"
+                      id="maint-last"
+                      data-testid="maint-last-input"
+                    />
+                  </div>
+                  <div class="field">
+                    <label>Interval (months)</label>
+                    <input
+                      required
+                      type="number"
+                      min="1"
+                      step="1"
+                      id="maint-interval"
+                      data-testid="maint-interval-input"
+                      placeholder="6"
+                    />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Service center contact</label>
+                  <input
+                    id="maint-contact"
+                    data-testid="maint-contact-input"
+                    placeholder="+1 555-0110 · HomeCare"
+                  />
+                </div>
+                <div class="form-actions">
+                  <button
+                    type="submit"
+                    class="btn btn-primary"
+                    data-testid="maint-submit"
+                  >
+                    <i class="fa-solid fa-plus"></i>
+                    <span id="maint-submit-label">Add schedule</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-ghost"
+                    id="maint-cancel"
+                    style="display: none"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">Status snapshot</div>
+                  <div class="card-sub">Where each appliance stands</div>
+                </div>
+              </div>
+              <div class="stat-mini-grid" id="maint-stat-grid"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Service schedule</div>
+                <div class="card-sub">
+                  <span id="maint-count">0</span> tracked
+                </div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="table" data-testid="maintenance-table">
+                <thead>
+                  <tr>
+                    <th>Appliance</th>
+                    <th>Last serviced</th>
+                    <th>Next service</th>
+                    <th>Contact</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="maint-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ BILLS ============ -->
+        <section class="tab-panel" id="tab-bills" data-testid="tab-bills">
+          <div class="page-head">
+            <div>
+              <p class="eyebrow">Utility bills</p>
+              <h1 class="page-title">Money that flows out</h1>
+              <p class="page-sub">
+                Log bills, track paid vs unpaid, and never miss a due date.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid-form">
+            <div class="card">
+              <div class="card-head">
+                <div class="card-title" id="bill-form-title">Add bill</div>
+              </div>
+              <form id="bill-form" class="form" data-testid="bill-form">
+                <input type="hidden" id="bill-id" />
+                <div class="field">
+                  <label>Bill title</label>
+                  <input
+                    required
+                    id="bill-title"
+                    data-testid="bill-title-input"
+                    placeholder="e.g. Feb electricity"
+                  />
+                </div>
+                <div class="row-2">
+                  <div class="field">
+                    <label>Category</label>
+                    <select
+                      id="bill-category"
+                      data-testid="bill-category-input"
+                    >
+                      <option>Electricity</option>
+                      <option>Water</option>
+                      <option>Internet</option>
+                      <option>Gas</option>
+                      <option>Rent</option>
+                      <option>Maintenance</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label>Amount</label>
+                    <input
+                      required
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      id="bill-amount"
+                      data-testid="bill-amount-input"
+                      placeholder="120.00"
+                    />
+                  </div>
+                </div>
+                <div class="row-2">
+                  <div class="field">
+                    <label>Due date</label>
+                    <input
+                      required
+                      type="date"
+                      id="bill-due"
+                      data-testid="bill-due-input"
+                    />
+                  </div>
+                  <div class="field">
+                    <label>Status</label>
+                    <select id="bill-status" data-testid="bill-status-input">
+                      <option value="Unpaid">Unpaid</option>
+                      <option value="Paid">Paid</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <button
+                    type="submit"
+                    class="btn btn-primary"
+                    data-testid="bill-submit"
+                  >
+                    <i class="fa-solid fa-plus"></i>
+                    <span id="bill-submit-label">Add bill</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-ghost"
+                    id="bill-cancel"
+                    style="display: none"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">This month at a glance</div>
+                  <div class="card-sub">Totals across all categories</div>
+                </div>
+              </div>
+              <div class="bill-summary">
+                <div class="bs-tile bs-total" data-testid="bill-summary-total">
+                  <div class="bs-label">Total spend</div>
+                  <div class="bs-value" id="bill-total">₹0</div>
+                </div>
+                <div class="bs-tile bs-paid" data-testid="bill-summary-paid">
+                  <div class="bs-label">Paid</div>
+                  <div class="bs-value" id="bill-paid">₹0</div>
+                </div>
+                <div
+                  class="bs-tile bs-unpaid"
+                  data-testid="bill-summary-unpaid"
+                >
+                  <div class="bs-label">Unpaid</div>
+                  <div class="bs-value" id="bill-unpaid">₹0</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">All bills</div>
+                <div class="card-sub"><span id="bill-count">0</span> total</div>
+              </div>
+              <div class="filter-row">
+                <select
+                  id="bill-filter-status"
+                  data-testid="bill-filter-status"
+                >
+                  <option value="all">All statuses</option>
+                  <option value="Unpaid">Unpaid</option>
+                  <option value="Paid">Paid</option>
+                </select>
+                <select
+                  id="bill-filter-category"
+                  data-testid="bill-filter-category"
+                >
+                  <option value="all">All categories</option>
+                  <option>Electricity</option>
+                  <option>Water</option>
+                  <option>Internet</option>
+                  <option>Gas</option>
+                  <option>Rent</option>
+                  <option>Maintenance</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="table" data-testid="bill-table">
+                <thead>
+                  <tr>
+                    <th>Bill</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Due</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="bill-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ INVENTORY ============ -->
+        <section
+          class="tab-panel"
+          id="tab-inventory"
+          data-testid="tab-inventory"
+        >
+          <div class="page-head">
+            <div>
+              <p class="eyebrow">Home inventory</p>
+              <h1 class="page-title">Every asset, catalogued</h1>
+              <p class="page-sub">
+                Purchase records, warranty status and quick search.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid-form">
+            <div class="card">
+              <div class="card-head">
+                <div class="card-title" id="inv-form-title">Add asset</div>
+              </div>
+              <form id="inv-form" class="form" data-testid="inventory-form">
+                <input type="hidden" id="inv-id" />
+                <div class="row-2">
+                  <div class="field">
+                    <label>Item name</label>
+                    <input
+                      required
+                      id="inv-name"
+                      data-testid="inv-name-input"
+                      placeholder="e.g. Sony 55'' TV"
+                    />
+                  </div>
+                  <div class="field">
+                    <label>Category</label>
+                    <select id="inv-category" data-testid="inv-category-input">
+                      <option>Electronics</option>
+                      <option>Appliance</option>
+                      <option>Furniture</option>
+                      <option>Kitchenware</option>
+                      <option>Tools</option>
+                      <option>Other</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="row-2">
+                  <div class="field">
+                    <label>Purchase date</label>
+                    <input
+                      type="date"
+                      id="inv-purchase"
+                      data-testid="inv-purchase-input"
+                    />
+                  </div>
+                  <div class="field">
+                    <label>Price</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      id="inv-price"
+                      data-testid="inv-price-input"
+                      placeholder="799"
+                    />
+                  </div>
+                </div>
+                <div class="row-2">
+                  <div class="field">
+                    <label>Serial / Model no.</label>
+                    <input
+                      id="inv-serial"
+                      data-testid="inv-serial-input"
+                      placeholder="XR55A80K-2024"
+                    />
+                  </div>
+                  <div class="field">
+                    <label>Warranty expiry</label>
+                    <input
+                      type="date"
+                      id="inv-warranty"
+                      data-testid="inv-warranty-input"
+                    />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Notes</label>
+                  <textarea
+                    id="inv-notes"
+                    rows="2"
+                    data-testid="inv-notes-input"
+                    placeholder="Where it lives, extras, tips..."
+                  ></textarea>
+                </div>
+                <div class="form-actions">
+                  <button
+                    type="submit"
+                    class="btn btn-primary"
+                    data-testid="inv-submit"
+                  >
+                    <i class="fa-solid fa-plus"></i>
+                    <span id="inv-submit-label">Add asset</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-ghost"
+                    id="inv-cancel"
+                    style="display: none"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">Warranty pulse</div>
+                  <div class="card-sub">Items still covered vs expired</div>
+                </div>
+              </div>
+              <div class="warranty-tiles" id="warranty-tiles"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Inventory</div>
+                <div class="card-sub"><span id="inv-count">0</span> items</div>
+              </div>
+              <div class="filter-row">
+                <div class="search-wrap">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input
+                    id="inv-search"
+                    data-testid="inv-search"
+                    placeholder="Search name, serial, notes"
+                  />
+                </div>
+                <select
+                  id="inv-filter-category"
+                  data-testid="inv-filter-category"
+                >
+                  <option value="all">All categories</option>
+                  <option>Electronics</option>
+                  <option>Appliance</option>
+                  <option>Furniture</option>
+                  <option>Kitchenware</option>
+                  <option>Tools</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+            <div
+              class="inv-grid"
+              id="inv-grid"
+              data-testid="inventory-grid"
+            ></div>
+          </div>
+        </section>
+
+        <!-- ============ REPORTS ============ -->
+        <section class="tab-panel" id="tab-reports" data-testid="tab-reports">
+          <div class="page-head">
+            <div>
+              <p class="eyebrow">Reports & analytics</p>
+              <h1 class="page-title">The house in numbers</h1>
+              <p class="page-sub">
+                Breakdowns, comparisons and one-click exports.
+              </p>
+            </div>
+            <div class="page-actions">
+              <button
+                class="btn btn-ghost"
+                id="export-json"
+                data-testid="export-json"
+              >
+                <i class="fa-solid fa-file-code"></i> Export JSON
+              </button>
+              <button
+                class="btn btn-primary"
+                id="export-csv"
+                data-testid="export-csv"
+              >
+                <i class="fa-solid fa-file-csv"></i> Export CSV
+              </button>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">Monthly expense breakdown</div>
+                  <div class="card-sub">Bills grouped by category</div>
+                </div>
+              </div>
+              <div class="chart-wrap" style="height: 280px">
+                <canvas id="report-doughnut"></canvas>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">Energy consumption</div>
+                  <div class="card-sub">Monthly kWh across appliances</div>
+                </div>
+              </div>
+              <div class="chart-wrap" style="height: 280px">
+                <canvas id="report-bar"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Summary</div>
+                <div class="card-sub">Rolled up totals</div>
+              </div>
+            </div>
+            <div class="report-summary" id="report-summary"></div>
+          </div>
+        </section>
+
+        <!-- ============ SETTINGS ============ -->
+        <section class="tab-panel" id="tab-settings" data-testid="tab-settings">
+          <div class="page-head">
+            <div>
+              <p class="eyebrow">Settings</p>
+              <h1 class="page-title">Fine-tune your setup</h1>
+              <p class="page-sub">Tariff, theme, and data controls.</p>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-head">
+                <div class="card-title">Tariff rate</div>
+              </div>
+              <div class="settings-block">
+                <label class="settings-label">Cost per kWh</label>
+                <div class="tariff-input-row">
+                  <span class="currency-prefix">₹</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    id="settings-tariff"
+                    data-testid="settings-tariff-input"
+                  />
+                  <span class="unit">/ kWh</span>
+                </div>
+                <button
+                  class="btn btn-primary"
+                  id="save-tariff"
+                  data-testid="save-tariff"
+                >
+                  <i class="fa-solid fa-check"></i> Save tariff
+                </button>
+                <p class="settings-hint">
+                  Used across Energy Monitor and cost estimates.
+                </p>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div class="card-title">Appearance</div>
+              </div>
+              <div class="settings-block">
+                <label class="settings-label">Theme</label>
+                <div class="theme-choice">
+                  <button
+                    class="theme-pill"
+                    data-theme="light"
+                    data-testid="theme-light"
+                  >
+                    <i class="fa-solid fa-sun"></i> Light
+                  </button>
+                  <button
+                    class="theme-pill"
+                    data-theme="dark"
+                    data-testid="theme-dark"
+                  >
+                    <i class="fa-solid fa-moon"></i> Dark
+                  </button>
+                </div>
+                <p class="settings-hint">
+                  Preference stored locally per device.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">Data management</div>
+            </div>
+            <div class="data-actions">
+              <button
+                class="btn btn-ghost"
+                id="load-demo-data"
+                data-testid="load-demo-data"
+              >
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Load demo data
+              </button>
+              <button
+                class="btn btn-ghost"
+                id="export-backup"
+                data-testid="export-backup"
+              >
+                <i class="fa-solid fa-cloud-arrow-down"></i> Export backup
+              </button>
+              <label
+                class="btn btn-ghost"
+                for="restore-file"
+                data-testid="restore-backup"
+                ><i class="fa-solid fa-cloud-arrow-up"></i> Restore from
+                backup</label
+              >
+              <input
+                id="restore-file"
+                type="file"
+                accept="application/json"
+                style="display: none"
+              />
+              <button
+                class="btn btn-danger"
+                id="reset-app"
+                data-testid="reset-app"
+              >
+                <i class="fa-solid fa-triangle-exclamation"></i> Reset all data
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- ============= CONFIRM MODAL ============= -->
+    <div class="modal" id="confirm-modal" data-testid="confirm-modal">
+      <div class="modal-card">
+        <div class="modal-icon">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div class="modal-title" id="confirm-title">Are you sure?</div>
+        <div class="modal-body" id="confirm-body">
+          This action cannot be undone.
+        </div>
+        <div class="modal-actions">
+          <button
+            class="btn btn-ghost"
+            id="confirm-cancel"
+            data-testid="confirm-cancel"
+          >
+            Cancel
+          </button>
+          <button
+            class="btn btn-danger"
+            id="confirm-ok"
+            data-testid="confirm-ok"
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============= TOAST ============= -->
+    <div class="toast-host" id="toast-host" data-testid="toast-host"></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
